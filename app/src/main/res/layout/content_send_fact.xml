@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="me.mohamey.catastic.SendFact"
+    tools:showIn="@layout/activity_send_fact"
+    android:orientation="vertical"
+    android:weightSum="4">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        tools:layout_editor_absoluteY="8dp"
+        tools:layout_editor_absoluteX="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/catfact_textview"
+            android:textSize="30sp"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="This is Some text!"/>
+
+    </RelativeLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/recipientWrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:id="@+id/recipient"
+            android:hint="Recipient Number"
+            android:inputType="numberPassword"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <Button
+                android:id="@+id/send_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="4dp"
+                android:text="@string/send_message_string"
+                android:layout_weight="0.23" />
+
+        </LinearLayout>
+
+</LinearLayout>

@@ -1,6 +1,7 @@
 package me.mohamey.catastic;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private Pattern pattern = Pattern.compile(EMAIL_PATTERN);
     private Matcher matcher;
     private static final String TAG = "MainActivity";
-    protected CookieManager cookieManager = new CookieManager();
+    protected static CookieManager cookieManager = new CookieManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,12 +104,18 @@ public class MainActivity extends AppCompatActivity {
     public void login(String username, String password){
         Log.d(TAG, "Logging in!");
         LoginObject obj = new LoginObject(username, password);
+        LoginResult res = null;
         try{
-            LoginResult res = new Login().execute(obj).get();
+            res = new Login().execute(obj).get();
             Toast.makeText(getApplicationContext(), res.getMessage(), Toast.LENGTH_LONG).show();
         }catch (Exception e){
             Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_LONG).show();
             Log.e(TAG, e.toString());
+        }
+
+        if (res != null && res.isResult()) {
+            Intent intent = new Intent(this, SendFact.class);
+            startActivity(intent);
         }
     }
 
@@ -211,7 +219,32 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 CookieStore cookieStore = cookieManager.getCookieStore();
-                List<HttpCookie> cookieList = cookieStore.getCookies();
+                URI threeUri = new URI(getString(R.string.login_endpoint));
+                List<HttpCookie> cookieList = cookieStore.get(threeUri);
+
+                for (HttpCookie cookie : cookieList){
+                    // gets domain set for the cookie
+                    System.out.println("Domain: " + cookie.getDomain());
+
+                    // gets max age of the cookie
+                    System.out.println("max age: " + cookie.getMaxAge());
+
+                    // gets name cookie
+                    System.out.println("name of cookie: " + cookie.getName());
+
+                    // gets path of the server
+                    System.out.println("server path: " + cookie.getPath());
+
+                    // gets boolean if cookie is being sent with secure protocol
+                    System.out.println("is cookie secure: " + cookie.getSecure());
+
+                    // gets the value of the cookie
+                    System.out.println("value of cookie: " + cookie.getValue());
+
+                    // gets the version of the protocol with which the given cookie is related.
+                    System.out.println("value of cookie: " + cookie.getVersion());
+                }
+
 
                 Log.d(TAG, "Retrieved Response");
 
