@@ -26,15 +26,15 @@
     </RelativeLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/usernameWrapper"
+        android:id="@+id/numberWrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/username"
-            android:inputType="textEmailAddress"/>
+            android:id="@+id/number"
+            android:inputType="numberDecimal"/>
 
     </android.support.design.widget.TextInputLayout>
 
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/password"
-            android:inputType="textPassword"/>
+            android:inputType="numberPassword"/>
 
     </android.support.design.widget.TextInputLayout>
 

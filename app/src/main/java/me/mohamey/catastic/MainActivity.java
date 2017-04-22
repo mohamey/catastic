@@ -19,10 +19,15 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookieStore;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,16 +39,20 @@ public class MainActivity extends AppCompatActivity {
     private Pattern pattern = Pattern.compile(EMAIL_PATTERN);
     private Matcher matcher;
     private static final String TAG = "MainActivity";
+    protected CookieManager cookieManager = new CookieManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final TextInputLayout usernameWrapper = (TextInputLayout) findViewById(R.id.usernameWrapper);
+        // Set cookie handler
+        CookieHandler.setDefault(cookieManager);
+
+        final TextInputLayout numberWrapper = (TextInputLayout) findViewById(R.id.numberWrapper);
         final TextInputLayout passwordWrapper = (TextInputLayout) findViewById(R.id.passwordWrapper);
 
-        usernameWrapper.setHint("Username");
+        numberWrapper.setHint("Phone Number");
         passwordWrapper.setHint("Password");
 
         Button loginButton = (Button) findViewById(R.id.button);
@@ -54,31 +63,31 @@ public class MainActivity extends AppCompatActivity {
                 // Hide the keyboard
                 hideKeyboard();
 
-                String username = null, password = null;
+                String number = null, password = null;
                 // Get input data
                 try{
-                    username = usernameWrapper.getEditText().getText().toString();
+                    number = numberWrapper.getEditText().getText().toString();
                     password = passwordWrapper.getEditText().getText().toString();
                 }catch (NullPointerException e){
                     Log.e(TAG, e.toString());
                 }
 
                 // Make sure values aren't null
-                if (username == null || password == null){
+                if (number == null || password == null){
                     Log.e(TAG, "Username or password was null");
                     return;
                 }
 
-                if (!validateEmail(username)){
-                    Log.d(TAG, String.format("Username is %s", username));
-                    usernameWrapper.setError("Not a valid Email Address!");
+                if (number.length() != 10){
+                    Log.d(TAG, String.format("Number is %s", number));
+                    numberWrapper.setError("Not a valid Number!");
                 } else if (!validatePassword(password)) {
                     Log.d(TAG, String.format("Password is %s", password));
                     passwordWrapper.setError("Not a valid Password!");
                 } else{
-                    usernameWrapper.setErrorEnabled(false);
+                    numberWrapper.setErrorEnabled(false);
                     passwordWrapper.setErrorEnabled(false);
-                    login(username, password);
+                    login(number, password);
                 }
 
 
@@ -86,13 +95,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public boolean validateEmail(String email){
-        matcher = pattern.matcher(email);
-        return matcher.matches();
-    }
-
     public boolean validatePassword(String password) {
-        return password.length() > 5;
+        return password.length() > 0;
     }
 
     public void login(String username, String password){
@@ -136,11 +140,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class LoginObject {
-        private String username;
+        private String number;
         private String password;
 
-        public LoginObject (String username, String password){
-            this.username = username;
+        public LoginObject (String number, String password){
+            this.number = number;
             this.password = password;
         }
 
@@ -148,16 +152,16 @@ public class MainActivity extends AppCompatActivity {
             this.password = password;
         }
 
-        public void setUsername(String username) {
-            this.username = username;
+        public void setNumber(String number) {
+            this.number = number;
         }
 
         public String getPassword() {
             return password;
         }
 
-        public String getUsername() {
-            return username;
+        public String getNumber() {
+            return number;
         }
     }
 
@@ -173,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 LoginObject loginObject = loginObjects[0];
                 String url = getResources().getString(R.string.login_endpoint);
                 URL obj = new URL(url);
-                HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+                HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
                 Log.d(TAG, "Opening HTTP Connection");
 
                 // Configure Request method
@@ -187,8 +191,8 @@ public class MainActivity extends AppCompatActivity {
 
                 // Create the JSON Object to Post
                 JSONObject payload = new JSONObject();
-                payload.put("username", loginObject.getUsername());
-                payload.put("password", loginObject.getPassword());
+                payload.put("msisdn", loginObject.getNumber());
+                payload.put("pin", loginObject.getPassword());
                 Log.d(TAG, "Created JSON Object");
 
                 // Get the output bytestream
@@ -206,11 +210,18 @@ public class MainActivity extends AppCompatActivity {
                     throw new Exception("Empty Response from server");
                 }
 
-                JSONObject response = new JSONObject(res);
-                Log.d(TAG, "Retrieved JSON Response");
+                CookieStore cookieStore = cookieManager.getCookieStore();
+                List<HttpCookie> cookieList = cookieStore.getCookies();
 
-                loginResult.setResult(response.getBoolean("result"));
-                loginResult.setMessage(response.getString("message"));
+                Log.d(TAG, "Retrieved Response");
+
+                if (res.contains("Logged in as")){
+                    loginResult.setResult(true);
+                    loginResult.setMessage("Successfully Logged in");
+                } else{
+                    loginResult.setResult(false);
+                    loginResult.setMessage("Log in failed, check username password combination");
+                }
 
             } catch(Exception e){
                 loginResult.setResult(false);
