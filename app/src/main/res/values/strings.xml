@@ -11,4 +11,5 @@
 
     <!-- Send Fact page -->
     <string name="send_message_string">Send Fact!</string>
+    <string name="api_endpoint">http://catfacts-api.appspot.com/api/facts</string>
 </resources>
