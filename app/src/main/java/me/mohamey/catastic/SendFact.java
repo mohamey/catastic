@@ -4,10 +4,19 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.res.TypedArrayUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.ListViewCompat;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.HorizontalScrollView;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -23,6 +32,9 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class SendFact extends AppCompatActivity {
     private final String TAG = "SendFact";
+    private ArrayList<String> facts = null;
+    private int listIndex = 0;
+    private CatFactResponse response = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +44,41 @@ public class SendFact extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getString(R.string.app_name));
 
-        new QueryApi().execute(100);
-        findViewById(R.id.loading_panel).setVisibility(View.GONE);
-        findViewById(R.id.catfact_textview).setVisibility(View.VISIBLE);
+        try{
+            response = new QueryApi().execute(100).get();
+        }catch(Exception e){
+            Log.e(TAG, e.toString());
+        }
+        /*findViewById(R.id.loading_panel).setVisibility(View.GONE);
+        findViewById(R.id.catfact_textview).setVisibility(View.VISIBLE);*/
+
+        if (response != null && response.isSuccess()){
+            facts = response.getFacts();
+            final TextView factView = (TextView) findViewById(R.id.catfact_textview);
+            factView.setMovementMethod(new ScrollingMovementMethod());
+            factView.setText(facts.get(listIndex));
+            listIndex++;
+
+            factView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "Click!");
+                    factView.setText(facts.get(listIndex));
+                    listIndex++;
+                    if (listIndex == 99){
+                        try{
+                            response = new QueryApi().execute(100).get();
+                        }catch (Exception e){
+                            Log.e(TAG, e.toString());
+                        }
+                        listIndex = 0;
+                    }
+                }
+            });
+        }
+
+
+
     }
 
     private class CatFactResponse{
